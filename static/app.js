@@ -96,6 +96,7 @@ let topUrls = [];
 let recentUrls = [];
 let createdShortUrl = '';
 let createdUrlItem = null;
+let currentDetailsShortUrl = '';
 const urlsPerPage = 20;
 let userUrls = [];
 let urlsCurrentPage = 1;
@@ -115,7 +116,7 @@ function renderTopUrlsTable() {
         const actions = document.createElement('td');
         const badge = document.createElement('span');
         const copyButton = createCopyButton(item.short_code);
-        const detailsButton = document.createElement('button');
+        const detailsButton = createDetailsButton(item);
 
         badge.className = 'uk-badge uk-text-xsmall';
         badge.style.cssText = 'background:#e5e7eb; color:#111827;';
@@ -130,14 +131,51 @@ function renderTopUrlsTable() {
         clicks.className = 'uk-text-right uk-text-bold';
         clicks.textContent = Number(item.clicks_count || 0).toLocaleString('pt-BR');
         actions.className = 'uk-text-center';
-        detailsButton.className = 'uk-button uk-button-default uk-button-small';
-        detailsButton.type = 'button';
-        detailsButton.textContent = 'Detalhes';
-        detailsButton.addEventListener('click', () => showUrlDetails(item));
         actions.append(copyButton, detailsButton);
         tr.append(shortCode, longUrl, source, clicks, actions);
         tbody.appendChild(tr);
     });
+}
+
+function createDetailsButton(item) {
+    const button = document.createElement('button');
+    button.className = 'uk-button uk-button-default uk-button-small';
+    button.type = 'button';
+    button.textContent = 'Detalhes';
+    button.addEventListener('click', () => showUrlDetails(item));
+    return button;
+}
+
+function showUrlDetails(item) {
+    const shortUrl = item.short_url || getShortUrl(item.short_code);
+    currentDetailsShortUrl = shortUrl;
+    document.getElementById('modal-short-code').textContent = item.short_code;
+    document.getElementById('modal-long-url').textContent = item.long_url;
+    document.getElementById('modal-utm-source').value = '';
+    document.getElementById('modal-utm-medium').value = '';
+    document.getElementById('modal-utm-campaign').value = '';
+    updateDetailsQrCode(shortUrl);
+    document.getElementById('modal-stats-link').href = `stats.php?id=${encodeURIComponent(item.id)}`;
+    UIkit.modal('#url-details-modal').show();
+}
+
+function updateDetailsQrCode(baseUrl) {
+    const url = new URL(baseUrl);
+    const parameters = {
+        utm_source: document.getElementById('modal-utm-source').value.trim(),
+        utm_medium: document.getElementById('modal-utm-medium').value.trim(),
+        utm_campaign: document.getElementById('modal-utm-campaign').value.trim()
+    };
+
+    Object.entries(parameters).forEach(([key, value]) => {
+        if (value) url.searchParams.set(key, value);
+        else url.searchParams.delete(key);
+    });
+
+    const finalUrl = url.toString();
+    document.getElementById('modal-short-url').value = finalUrl;
+    document.getElementById('modal-qrcode').src =
+        `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(finalUrl)}`;
 }
 
 function createCopyButton(shortCode) {
@@ -191,16 +229,6 @@ async function copyShortUrl(shortCode) {
     }
 }
 
-function showUrlDetails(item) {
-    createdUrlItem = item;
-    createdShortUrl = item.short_url || getShortUrl(item.short_code);
-    document.getElementById('utm-source').value = '';
-    document.getElementById('utm-medium').value = '';
-    document.getElementById('utm-campaign').value = '';
-    updateShortUrlQrCode();
-    UIkit.modal('#short-url-modal').show();
-}
-
 function renderRecentUrlsTable() {
     const table = document.getElementById('recent-urls-table');
     if (!table) return;
@@ -221,7 +249,7 @@ function renderRecentUrlsTable() {
         const clicks = document.createElement('td');
         const createdAt = document.createElement('td');
         const actions = document.createElement('td');
-        const detailsButton = document.createElement('button');
+        const detailsButton = createDetailsButton(item);
 
         shortCode.textContent = item.short_code;
         longUrl.className = 'uk-text-truncate';
@@ -231,10 +259,6 @@ function renderRecentUrlsTable() {
         clicks.className = 'uk-text-right';
         clicks.textContent = Number(item.clicks_count || 0).toLocaleString('pt-BR');
         createdAt.textContent = formatUrlDate(item.created_at);
-        detailsButton.className = 'uk-button uk-button-default uk-button-small';
-        detailsButton.type = 'button';
-        detailsButton.textContent = 'Detalhes';
-        detailsButton.addEventListener('click', () => showUrlDetails(item));
         actions.className = 'uk-text-center';
         actions.append(createCopyButton(item.short_code), detailsButton);
         row.append(shortCode, longUrl, clicks, createdAt, actions);
@@ -272,37 +296,6 @@ async function loadDashboardUrls() {
     } finally {
         loading.hidden = true;
     }
-}
-
-function openDetailsModal(urlId) {
-    const urlItem = topUrls.find(url => url.id === urlId);
-    if (!urlItem) return;
-
-    document.getElementById('modal-short-code').textContent = urlItem.short_code;
-    document.getElementById('modal-long-url').textContent = urlItem.long_url;
-
-    const breakdownContainer = document.getElementById('modal-utm-breakdown');
-    breakdownContainer.innerHTML = '';
-    const total = urlItem.clicks_count || 1;
-    const sources = urlItem.utm_breakdown || { [urlItem.utm_source || 'direct']: total };
-
-    Object.entries(sources).forEach(([source, count]) => {
-        const percentage = Math.round((count / total) * 100);
-        const div = document.createElement('div');
-        div.className = 'bar-utm-item';
-        div.innerHTML = `
-            <div class="uk-flex uk-flex-between">
-                <span><b>${source}</b></span>
-                <span class="uk-text-muted">${count.toLocaleString('pt-BR')} cliques (${percentage}%)</span>
-            </div>
-            <div class="bar-utm-track">
-                <div class="bar-utm-fill" style="width: ${percentage}%;"></div>
-            </div>
-        `;
-        breakdownContainer.appendChild(div);
-    });
-
-    UIkit.modal('#url-details-modal').show();
 }
 
 async function handleShortenUrl(event) {
@@ -444,7 +437,7 @@ function renderUserUrls() {
         const clicks = document.createElement('td');
         const createdAt = document.createElement('td');
         const actions = document.createElement('td');
-        const detailsButton = document.createElement('button');
+        const detailsButton = createDetailsButton(url);
 
         shortCode.textContent = url.short_code;
         destination.textContent = url.long_url;
@@ -455,10 +448,6 @@ function renderUserUrls() {
         clicks.className = 'uk-text-right';
         createdAt.textContent = formatUrlDate(url.created_at);
 
-        detailsButton.className = 'uk-button uk-button-default uk-button-small';
-        detailsButton.type = 'button';
-        detailsButton.textContent = 'Detalhes';
-        detailsButton.addEventListener('click', () => showUrlDetails(url));
         actions.className = 'uk-text-center';
         actions.append(createCopyButton(url.short_code), detailsButton);
         row.append(shortCode, destination, clicks, createdAt, actions);
@@ -514,6 +503,82 @@ function saveSettings() {
     });
 }
 
+function createStatsChart(elementId, type, labels, values, label) {
+    const canvas = document.getElementById(elementId);
+    if (!canvas || typeof Chart === 'undefined') return;
+
+    const colors = ['#111827', '#2563eb', '#059669', '#d97706', '#dc2626', '#7c3aed'];
+    new Chart(canvas, {
+        type,
+        data: {
+            labels,
+            datasets: [{
+                label,
+                data: values,
+                backgroundColor: type === 'line' ? '#2563eb' : colors,
+                borderColor: type === 'line' ? '#2563eb' : colors,
+                borderWidth: 2,
+                fill: type === 'line',
+                tension: 0.25
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: { display: type !== 'line' }
+            },
+            scales: type === 'line' ? { y: { beginAtZero: true, ticks: { precision: 0 } } } : {}
+        }
+    });
+}
+
+async function loadStatsPage() {
+    const params = new URLSearchParams(window.location.search);
+    const urlId = params.get('id');
+    const loading = document.getElementById('stats-loading');
+    const error = document.getElementById('stats-error');
+    const content = document.getElementById('stats-content');
+    if (!loading || !error || !content) return;
+
+    if (!urlId) {
+        loading.hidden = true;
+        error.textContent = 'URL inválida.';
+        error.hidden = false;
+        return;
+    }
+
+    try {
+        const response = await fetch(`api/url_stats.php?id=${encodeURIComponent(urlId)}`, {
+            credentials: 'same-origin'
+        });
+        const result = await response.json();
+        if (!response.ok || !result.success) {
+            throw new Error(result.message || 'Não foi possível carregar as estatísticas.');
+        }
+
+        const shortUrl = getShortUrl(result.url.short_code);
+        document.getElementById('stats-title').textContent = `Estatísticas: ${result.url.short_code}`;
+        document.getElementById('stats-destination').textContent = result.url.long_url;
+        const shortUrlLink = document.getElementById('stats-short-url');
+        shortUrlLink.href = shortUrl;
+        document.getElementById('stats-total-clicks').textContent = Number(result.total_clicks).toLocaleString('pt-BR');
+        document.getElementById('stats-source-count').textContent = result.by_source.length.toLocaleString('pt-BR');
+        document.getElementById('stats-campaign-count').textContent = result.by_campaign.length.toLocaleString('pt-BR');
+
+        createStatsChart('daily-chart', 'line', result.daily.map(item => item.label), result.daily.map(item => Number(item.total)), 'Cliques');
+        createStatsChart('source-chart', 'doughnut', result.by_source.map(item => item.label), result.by_source.map(item => Number(item.total)), 'Cliques');
+        createStatsChart('medium-chart', 'bar', result.by_medium.map(item => item.label), result.by_medium.map(item => Number(item.total)), 'Cliques');
+        createStatsChart('campaign-chart', 'bar', result.by_campaign.map(item => item.label), result.by_campaign.map(item => Number(item.total)), 'Cliques');
+        content.hidden = false;
+    } catch (loadError) {
+        error.textContent = loadError.message || 'Erro de comunicação com o servidor.';
+        error.hidden = false;
+    } finally {
+        loading.hidden = true;
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     const currentYear = document.getElementById('current-year');
     if (currentYear) currentYear.textContent = new Date().getFullYear();
@@ -522,8 +587,19 @@ document.addEventListener('DOMContentLoaded', () => {
         loadDashboardUrls();
     }
 
+    if (document.getElementById('stats-content')) {
+        loadStatsPage();
+    }
+
     ['utm-source', 'utm-medium', 'utm-campaign'].forEach(id => {
         const input = document.getElementById(id);
         if (input) input.addEventListener('input', updateShortUrlQrCode);
+    });
+
+    ['modal-utm-source', 'modal-utm-medium', 'modal-utm-campaign'].forEach(id => {
+        const input = document.getElementById(id);
+        if (input) input.addEventListener('input', () => {
+            updateDetailsQrCode(currentDetailsShortUrl);
+        });
     });
 });

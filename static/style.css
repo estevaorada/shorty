@@ -94,6 +94,10 @@ body.panel-page {
     border-radius: 9999px;
 }
 
+#stats-content canvas {
+    min-height: 260px;
+}
+
 @media (max-width: 959px) {
     .sidebar-enterprise {
         display: none;

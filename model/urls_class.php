@@ -57,6 +57,72 @@ class Urls {
         return $statement->fetchAll();
     }
 
+    public function getStatsByUser($urlId, $userId) {
+        $urlStatement = $this->executeQuery(
+            'SELECT id, short_code, long_url, created_at
+             FROM urls
+             WHERE id = :url_id AND user_id = :user_id
+             LIMIT 1',
+            [
+                'url_id' => $urlId,
+                'user_id' => $userId,
+            ]
+        );
+        $url = $urlStatement->fetch();
+
+        if (!$url) {
+            return null;
+        }
+
+        $stats = [
+            'url' => $url,
+            'total_clicks' => $this->getClickCount($urlId),
+            'by_source' => $this->getClickBreakdown($urlId, 'utm_source'),
+            'by_medium' => $this->getClickBreakdown($urlId, 'utm_medium'),
+            'by_campaign' => $this->getClickBreakdown($urlId, 'utm_campaign'),
+            'daily' => $this->getDailyClicks($urlId),
+        ];
+
+        return $stats;
+    }
+
+    private function getClickCount($urlId) {
+        $statement = $this->executeQuery(
+            'SELECT COUNT(*) FROM click_logs WHERE url_id = :url_id',
+            ['url_id' => $urlId]
+        );
+        return (int) $statement->fetchColumn();
+    }
+
+    private function getClickBreakdown($urlId, $column) {
+        $allowedColumns = ['utm_source', 'utm_medium', 'utm_campaign'];
+        if (!in_array($column, $allowedColumns, true)) {
+            throw new InvalidArgumentException('Agrupamento inválido.');
+        }
+
+        $statement = $this->executeQuery(
+            "SELECT COALESCE(NULLIF($column, ''), 'Sem UTM') AS label, COUNT(*) AS total
+             FROM click_logs
+             WHERE url_id = :url_id
+             GROUP BY label
+             ORDER BY total DESC, label ASC",
+            ['url_id' => $urlId]
+        );
+        return $statement->fetchAll();
+    }
+
+    private function getDailyClicks($urlId) {
+        $statement = $this->executeQuery(
+            "SELECT DATE(clicked_at) AS label, COUNT(*) AS total
+             FROM click_logs
+             WHERE url_id = :url_id
+             GROUP BY DATE(clicked_at)
+             ORDER BY label ASC",
+            ['url_id' => $urlId]
+        );
+        return $statement->fetchAll();
+    }
+
     public function createShortUrl($userId, $longUrl, $slug = '') {
         $attempts = $slug === '' ? 100 : 1;
 

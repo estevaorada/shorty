@@ -267,29 +267,47 @@ if (!isset($_SESSION['user_id'])) {
         </div>
     </div>
 
-    <!-- Modal de Detalhes da URL -->
     <div id="url-details-modal" uk-modal>
         <div class="uk-modal-dialog uk-modal-body uk-card-enterprise">
-            <h2 class="uk-modal-title uk-h5 uk-text-bold">Detalhes do Link</h2>
-            
+            <button class="uk-modal-close-default" type="button" uk-close></button>
+            <h2 class="uk-modal-title uk-h5 uk-text-bold">Detalhes do link</h2>
+
             <div class="uk-margin-small-top">
-                <p class="uk-text-xsmall uk-text-muted uk-margin-remove-bottom">Código Curto</p>
+                <p class="uk-text-xsmall uk-text-muted uk-margin-remove-bottom">Código curto</p>
                 <p id="modal-short-code" class="uk-text-bold uk-text-large uk-margin-remove-top"></p>
             </div>
 
             <div class="uk-margin-small">
-                <p class="uk-text-xsmall uk-text-muted uk-margin-remove-bottom">URL de Destino Original</p>
+                <label class="uk-form-label uk-text-xsmall uk-text-muted" for="modal-short-url">Link curto</label>
+                <input id="modal-short-url" class="uk-input uk-input-enterprise uk-margin-small-top" type="text" readonly>
+            </div>
+
+            <div class="uk-text-center uk-margin-medium">
+                <img id="modal-qrcode" width="150" height="150" alt="QR code do link curto">
+            </div>
+
+            <div class="uk-margin-small">
+                <p class="uk-text-xsmall uk-text-muted uk-margin-remove-bottom">URL de destino</p>
                 <p id="modal-long-url" class="uk-text-small uk-text-truncate uk-margin-remove-top uk-text-muted"></p>
             </div>
 
-            <div class="uk-margin-medium-top">
-                <h3 class="uk-h6 uk-text-bold">Distribuição por utm_source</h3>
-                <div id="modal-utm-breakdown" class="uk-margin-small-top">
-                    <!-- Barras de utm geradas via js -->
+            <div class="uk-grid-small" uk-grid>
+                <div class="uk-width-1-1">
+                    <label class="uk-form-label uk-text-small uk-text-muted" for="modal-utm-source">utm_source</label>
+                    <input id="modal-utm-source" class="uk-input uk-input-enterprise uk-margin-small-top" type="text" placeholder="newsletter">
+                </div>
+                <div class="uk-width-1-2@s">
+                    <label class="uk-form-label uk-text-small uk-text-muted" for="modal-utm-medium">utm_medium</label>
+                    <input id="modal-utm-medium" class="uk-input uk-input-enterprise uk-margin-small-top" type="text" placeholder="email">
+                </div>
+                <div class="uk-width-1-2@s">
+                    <label class="uk-form-label uk-text-small uk-text-muted" for="modal-utm-campaign">utm_campaign</label>
+                    <input id="modal-utm-campaign" class="uk-input uk-input-enterprise uk-margin-small-top" type="text" placeholder="promocao">
                 </div>
             </div>
 
             <div class="uk-text-right uk-margin-medium-top">
+                <a id="modal-stats-link" class="uk-button uk-btn-enterprise" href="">Exibir estatísticas</a>
                 <button class="uk-button uk-button-default uk-modal-close" type="button">Fechar</button>
             </div>
         </div>
