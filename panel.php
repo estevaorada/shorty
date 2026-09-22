@@ -2,7 +2,7 @@
 // verify if the user is logged in
 session_start();
 if (!isset($_SESSION['user_id'])) {
-    header('Location: login.php');
+    header('Location: index.php');
     exit;
 }
 ?>
@@ -12,101 +12,13 @@ if (!isset($_SESSION['user_id'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel — Shorty Enterprise</title>
+    <!-- favicon -->
+    <link rel="icon" type="image/png" href="static/favicon.png">
     <!-- UIkit CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/uikit@3.21.16/dist/css/uikit.min.css" />
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            color: #1f2937;
-            background-color: #f3f4f6;
-        }
-        .uk-card-enterprise {
-            background-color: #ffffff;
-            border: 1px solid #e5e7eb;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.04), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
-            border-radius: 0.5rem;
-        }
-        .uk-input-enterprise, .uk-select-enterprise {
-            background-color: #f9fafb !important;
-            border-color: #d1d5db !important;
-            border-radius: 0.375rem !important;
-            color: #111827;
-        }
-        .uk-input-enterprise:focus, .uk-select-enterprise:focus {
-            background-color: #ffffff !important;
-            border-color: #6b7280 !important;
-        }
-        .uk-btn-enterprise {
-            background-color: #111827;
-            color: #ffffff;
-            border-radius: 0.375rem;
-            transition: background-color 0.2s ease;
-        }
-        .uk-btn-enterprise:hover {
-            background-color: #374151;
-            color: #ffffff;
-        }
-        .sidebar-enterprise {
-            width: 250px;
-            background-color: #ffffff;
-            border-right: 1px class="uk-border-muted" #e5e7eb;
-            position: fixed;
-            top: 0;
-            bottom: 0;
-            left: 0;
-            z-index: 100;
-            display: flex;
-            flex-direction: column;
-            border-right: 1px solid #e5e7eb;
-        }
-        .sidebar-link {
-            display: flex;
-            align-items: center;
-            padding: 0.75rem 1.25rem;
-            color: #4b5563;
-            font-size: 0.875rem;
-            font-weight: 500;
-            border-left: 3px solid transparent;
-            text-decoration: none;
-            transition: all 0.2s;
-        }
-        .sidebar-link:hover, .sidebar-link.uk-active {
-            color: #111827;
-            background-color: #f9fafb;
-            border-left-color: #111827;
-            text-decoration: none;
-        }
-        .main-content {
-            margin-left: 250px;
-            min-height: 100vh;
-        }
-        @media (max-width: 959px) {
-            .sidebar-enterprise {
-                display: none;
-            }
-            .main-content {
-                margin-left: 0;
-            }
-        }
-        .bar-utm-item {
-            font-size: 0.8125rem;
-            margin-bottom: 0.5rem;
-        }
-        .bar-utm-track {
-            background-color: #f3f4f6;
-            border-radius: 9999px;
-            height: 8px;
-            overflow: hidden;
-            margin-top: 0.25rem;
-        }
-        .bar-utm-fill {
-            background-color: #111827;
-            height: 100%;
-            border-radius: 9999px;
-        }
-    </style>
+    <link rel="stylesheet" href="static/style.css" />
 </head>
-<body>
+<body class="panel-page">
 
     <!-- Sidebar fixa para desktop -->
     <aside class="sidebar-enterprise">
@@ -131,6 +43,9 @@ if (!isset($_SESSION['user_id'])) {
         </nav>
 
         <div class="uk-padding-small uk-border-top uk-text-center">
+            <a href="api/logout.php" class="uk-button uk-button-default uk-button-small uk-width-1-1 uk-margin-small-bottom">
+                <span uk-icon="icon: sign-out" class="uk-margin-small-right"></span> Sair
+            </a>
             <span class="uk-text-xsmall uk-text-muted">v0.1-beta</span>
         </div>
     </aside>
@@ -383,8 +298,8 @@ if (!isset($_SESSION['user_id'])) {
     <!-- UIkit JS -->
     <script src="https://cdn.jsdelivr.net/npm/uikit@3.21.16/dist/js/uikit.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/uikit@3.21.16/dist/js/uikit-icons.min.js"></script>
-
-    <script>
+    <script src="static/app.js"></script>
+    <script type="text/plain">
         let topUrls = [];
         let recentUrls = [];
 

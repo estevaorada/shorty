@@ -1,50 +1,22 @@
 <!DOCTYPE html>
 <html lang="pt-BR" class="uk-background-muted">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login — Encurtador Privado</title>
+    <!-- favicon -->
+    <link rel="icon" type="image/png" href="static/favicon.png">
     <!-- UIkit CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/uikit@3.21.16/dist/css/uikit.min.css" />
-    <!-- Custom minimalist overrides for enterprise grey/white theme -->
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            color: #1f2937;
-        }
-        .uk-card-enterprise {
-            background-color: #ffffff;
-            border: 1px solid #e5e7eb;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-            border-radius: 0.5rem;
-        }
-        .uk-input-enterprise {
-            background-color: #f9fafb !important;
-            border-color: #d1d5db !important;
-            border-radius: 0.375rem !important;
-            color: #111827;
-        }
-        .uk-input-enterprise:focus {
-            background-color: #ffffff !important;
-            border-color: #6b7280 !important;
-        }
-        .uk-btn-enterprise {
-            background-color: #111827;
-            color: #ffffff;
-            border-radius: 0.375rem;
-            transition: background-color 0.2s ease;
-        }
-        .uk-btn-enterprise:hover {
-            background-color: #374151;
-            color: #ffffff;
-        }
-    </style>
+    <link rel="stylesheet" href="static/style.css" />
 </head>
+
 <body class="uk-flex uk-flex-middle uk-height-viewport uk-background-muted">
 
     <div class="uk-width-1-1">
         <div class="uk-container uk-container-xsmall">
-            
+
             <!-- Branding Header -->
             <div class="uk-text-center uk-margin-medium-bottom">
                 <span uk-icon="icon: link; ratio: 1.2" class="uk-text-secondary"></span>
@@ -148,103 +120,7 @@
     <!-- UIkit JS -->
     <script src="https://cdn.jsdelivr.net/npm/uikit@3.21.16/dist/js/uikit.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/uikit@3.21.16/dist/js/uikit-icons.min.js"></script>
-    
-    <script>
-        async function handleLogin(event) {
-            event.preventDefault();
-            const form = event.currentTarget;
-            const loginButton = document.getElementById('login-button');
-            loginButton.disabled = true;
-            loginButton.textContent = 'Entrando...';
-
-            try {
-                const response = await fetch('api/user_login.php', {
-                    method: 'POST',
-                    body: new FormData(form),
-                    credentials: 'same-origin'
-                });
-                const result = await response.json();
-
-                if (!response.ok || !result.success) {
-                    throw new Error(result.message || 'Não foi possível realizar o login.');
-                }
-
-                UIkit.notification({
-                    message: result.message,
-                    status: 'success',
-                    pos: 'top-center',
-                    timeout: 1500
-                });
-
-                window.setTimeout(() => {
-                    window.location.href = 'panel.php';
-                }, 1500);
-            } catch (error) {
-                UIkit.notification({
-                    message: error.message || 'Erro de comunicação com o servidor.',
-                    status: 'danger',
-                    pos: 'top-center',
-                    timeout: 4000
-                });
-                loginButton.disabled = false;
-                loginButton.textContent = 'Entrar';
-            }
-        }
-
-        async function handleSignup(event) {
-            event.preventDefault();
-            const form = event.currentTarget;
-            const signupButton = document.getElementById('signup-button');
-            signupButton.disabled = true;
-            signupButton.textContent = 'Cadastrando...';
-
-            try {
-                const response = await fetch('api/user_signup.php', {
-                    method: 'POST',
-                    body: new FormData(form),
-                    credentials: 'same-origin'
-                });
-                const result = await response.json();
-
-                if (!response.ok || !result.success) {
-                    throw new Error(result.message || 'Não foi possível realizar o cadastro.');
-                }
-
-                const signupEmail = form.elements.email.value;
-                UIkit.modal('#signup-modal').hide();
-                form.reset();
-                document.getElementById('email').value = signupEmail;
-                UIkit.notification({
-                    message: result.message,
-                    status: 'success',
-                    pos: 'top-center',
-                    timeout: 4000
-                });
-            } catch (error) {
-                UIkit.notification({
-                    message: error.message || 'Erro de comunicação com o servidor.',
-                    status: 'danger',
-                    pos: 'top-center',
-                    timeout: 4000
-                });
-            } finally {
-                signupButton.disabled = false;
-                signupButton.textContent = 'Cadastrar';
-            }
-        }
-
-        function handleRecovery(event) {
-            event.preventDefault();
-            UIkit.modal('#recovery-modal').hide();
-            UIkit.notification({
-                message: `<span uk-icon='icon: mail'></span> Instruções enviadas para seu e-mail corporativo.`,
-                status: 'success',
-                pos: 'top-center',
-                timeout: 4000
-            });
-        }
-        // update current year in footer
-        document.getElementById('current-year').textContent = new Date().getFullYear();
-    </script>
+    <script src="static/app.js"></script>
 </body>
+
 </html>
