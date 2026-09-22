@@ -158,7 +158,7 @@ class Urls {
     }
 
     private function generateShortCode() {
-        return 'link-' . bin2hex(random_bytes(5));
+        return bin2hex(random_bytes(5));
     }
 
     public function getUrlById($id) {
